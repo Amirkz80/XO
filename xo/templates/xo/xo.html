@@ -1,0 +1,299 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-+0n0xVW2eSR5OomGNYDnhzAbDsOXxcvSN1TPprVMTNDbiYZCxYbOOl7+AMvyTG2x" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.1/font/bootstrap-icons.css">
+    <title>XO</title>
+
+    <style>
+      body{
+        background:url(https://res.cloudinary.com/damkkkcpc/image/upload/v1647888097/xo/photo_2022-03-21_22-10-50_eyoc37.jpg) no-repeat ;
+        background-size: 100%;
+        
+      }
+      .big-box{
+          width: 20rem;
+          height:20rem ;
+          background-color: rgba(61, 172, 216, 0.664);
+          
+      }
+      .big-box div:nth-child(-n+9){
+          width: 6.5rem;
+          height:6.5rem ;
+          background-color: rgba(6, 28, 48, 0.5);
+          float: left;
+          margin: 1.3px 1.3px;
+      }
+      #results {
+          text-align: center;
+          color: white;
+          font-size: 50px;
+      }
+      #X{
+        color: red;
+      }
+    </style>
+
+
+</head>
+<body>
+    <div class="col-12 d-flex justify-content-center mt-4">
+    
+      <div class="col-auto">
+        <!--A buttun to play and stop the music in the bg, I disabled it temporarily-->
+        <!--<button type="submit" class="btn btn-danger mb-3 float-start  mx-5" id="soundButton" onclick="changeSound()">
+          <i id='volume' class="bi bi-volume-up-fill"></i>
+        </button>-->
+
+        <div class="col-auto">
+            <button type="submit" class="btn btn-warning mb-3 float-start  mx-5" id="button-2" onclick="reload()" >Play Again</button>
+        </div>        
+      </div>
+      
+    </div>
+
+    <div id="results">
+    <span id="X">X</span><span> wins : </span><span id="xCounter">0</span> |
+    <span id="O">O</span> wins : </span><span id="oCounter">0</span>
+    </div>
+
+    <div class=" d-flex justify-content-center col-12 ">
+    <div class="big-box col-6 my-5" id="table" >
+        <div id="cell1" class="0,0" onclick="takingTurn(id)"></div>
+        <div id="cell2" class="0,1" onclick="takingTurn(id)"></div>
+        <div id="cell3" class="0,2" onclick="takingTurn(id)"></div>
+        <div id="cell4" class="1,0" onclick="takingTurn(id)"></div>
+        <div id="cell5" class="1,1" onclick="takingTurn(id)"></div>
+        <div id="cell6" class="1,2" onclick="takingTurn(id)"></div>
+        <div id="cell7" class="2,0" onclick="takingTurn(id)"></div>
+        <div id="cell8" class="2,1" onclick="takingTurn(id)"></div>
+        <div id="cell9" class="2,2" onclick="takingTurn(id)"></div>
+    </div>
+       
+
+    </div>
+    <div class=" d-flex justify-content-center col-12 btn  ">
+
+    <!--An audio to play i nthe bg, i temporarily disabled it!
+    <audio autoplay class="col-2" id="audioSource">
+      <source src="/audio/Relaxing_Music.mp3" type="audio/mpeg">
+    </audio>
+    -->
+
+    </div>  
+
+    <script defer>
+      // A dictionary to save the winning results
+    var wins = {
+      'X' : 0,
+      'O' : 0,
+    }
+
+    // win flag
+    var win = false;
+
+    // The cell number
+    var cellNum = 1;
+
+    // Full cells number
+    var fullCellsNumber = 0
+
+    // Coordinate of cells
+    var coordinates = {
+      'cell1' : [0, 0],
+      'cell2' : [0, 1],
+      'cell3' : [0, 2],
+      'cell4' : [1, 0],
+      'cell5' : [1, 1],
+      'cell6' : [1, 2],
+      'cell7' : [2, 0],
+      'cell8' : [2, 1],
+      'cell9' : [2, 2]
+    };
+
+    // Win possibilities
+    var winPossibilities = {
+      'row1' : [ [0, 0], [0, 1], [0, 2] ],
+      'row2' : [ [1, 0], [1, 1], [1, 2] ],
+      'row3' : [ [2, 0], [2, 1], [2, 2] ],
+      'column1' : [ [0, 0], [1, 0], [2, 0] ],
+      'column2' : [ [0, 1], [1, 1], [2, 1] ],
+      'column3' : [ [0, 2], [1, 2], [2, 2] ],
+      'cross1' : [ [0, 2], [1, 1], [2, 0] ],
+      'cross2' : [ [0, 0], [1, 1], [2, 2] ]
+    };
+
+    // A function to reload the page
+    function reload(){
+      location.reload();
+    }
+
+    // A function to reset the game
+    function resetGame(){
+
+      win = false;
+      cellNum = 1;
+      fullCellsNumber = 0;
+
+      document.getElementById('X').style = "red";
+      document.getElementById('O').style = "white";
+
+      // Delete all the text in cells and make enable again
+      for (i=1; i<10; i++){
+        let id = 'cell' + i.toString()
+        let element = document.getElementById(id);
+        element.innerText = '';
+        element.onclick = function(){
+          takingTurn(id);
+        }
+      }
+
+      return 1;
+    }
+
+    // A functioon to count the game status
+    function winCounter(player){
+        wins[player] = wins[player] + 1;
+        
+        if (player === 'X'){
+          document.getElementById('xCounter').innerText = wins[player].toString();
+        }
+        else{
+          document.getElementById('oCounter').innerText = wins[player].toString();
+        } 
+    }
+
+    // A function to change game appearance and status when users get a draw
+    function drawGame(){
+
+      // Run function after 0.1 seconds
+      setTimeout(function(){
+        // Prepare game for new round
+        if (confirm("Draw!\nDo you want to play again ?")){
+          resetGame();
+        }
+        else{
+          // Disable all cells of the table
+          for (i=1; i<10; i++){
+            let id = 'cell' + i.toString()
+            let element = document.getElementById(id);
+            element.onclick = "";
+          }
+
+
+          document.getElementById('X').style = "white";
+          document.getElementById('O').style = "white";
+          
+          return 1;
+        }
+    }, 100);
+
+    }
+
+    // A function to change game appearance and status when a user win the game
+    function winGame(winningCellsList, neghbourCell){
+
+      // change win flag
+      win = true;
+
+      // Increase number of wins that winner has by one unit
+      winCounter(neghbourCell.innerText);
+
+      winningCellsList[0].innerHTML = 
+      `<div style='text-align: center; font-size: 70px; color: Red; padding-bottom: 5px;'>${winningCellsList[0].innerText}</div>`; 
+      winningCellsList[1].innerHTML = 
+      `<div style='text-align: center; font-size: 70px; color: Red; padding-bottom: 5px;'>${winningCellsList[1].innerText}</div>`; 
+      winningCellsList[2].innerHTML = 
+      `<div style='text-align: center; font-size: 70px; color: Red; padding-bottom: 5px;'>${winningCellsList[2].innerText}</div>`; 
+      
+      // Run function after 0.1 seconds
+      setTimeout(function(){
+          // Prepear game for new round
+          if (confirm(`${neghbourCell.innerText} won !\nDo you want to play again ?`)){
+            resetGame();
+          }
+          else{
+            // Disable all cells of the table
+            for (i=1; i<10; i++){
+              let id = 'cell' + i.toString()
+              let element = document.getElementById(id);
+              element.onclick = "";
+            }
+            document.getElementById('X').style = "white";
+            document.getElementById('O').style = "white";
+            return 1;
+          }
+      }, 100);
+      
+    }
+
+
+    // Checks if a user has won or not
+    function checkStatus(id){
+
+      var cellContent = [];
+
+      // Get the position of the cell user clicked on
+      var position = coordinates[id];
+      
+      // Loop over all winning possibilities
+      for (let key in winPossibilities){
+
+        // This part finds which winPosibilities does the cell belongs to
+        for (i=0; i<3; i++){
+
+          if (position.every((value, index) => value === winPossibilities[key][i][index] )){
+            for (j=0; j<3; j++){
+              var neghbourCell = document.getElementsByClassName(winPossibilities[key][j].toString())[0];
+              cellContent.push(neghbourCell);
+            }
+            
+            // When one of the users win the game, reset the data and clear the cells
+            if (cellContent[0].innerText === cellContent[1].innerText && cellContent[1].innerText === cellContent[2].innerText && cellContent[0].innerText !== ''){
+              winGame(cellContent, neghbourCell);
+            }
+
+            cellContent = [];
+          }
+        }
+      }
+
+    }
+
+    // A function to play in multiplayer mode
+    function takingTurn(id){
+      
+      let cell = document.getElementById(id);
+
+      if (cellNum % 2 === 0){
+        cell.innerHTML = "<div style='text-align: center; font-size: 70px; color: white; padding-bottom: 5px;'>O</div>" 
+        document.getElementById('X').style.color = 'red';
+        document.getElementById('O').style.color = 'white';
+      }
+
+      else{
+        cell.innerHTML = "<div style='text-align: center; font-size: 70px; color: white; padding-bottom: 5px;'>X</div>"
+        document.getElementById('O').style.color = 'red';
+        document.getElementById('X').style.color = 'white';
+      }
+
+      // Check to see how many full cells does table have
+      fullCellsNumber = fullCellsNumber + 1;
+      // Disable cell
+      cell.onclick = "";
+      // Increase cellNumber  
+      cellNum = cellNum + 1;
+      // Call checkstatus function
+      checkStatus(id);
+
+      // If there are 9 full cells and a user hasn't won, then the game is a draw
+      if (fullCellsNumber === 9 && win === false){
+        drawGame();
+      }
+
+    ;}
+    </script>
+</body>
+</html>
